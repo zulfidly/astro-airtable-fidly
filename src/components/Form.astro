@@ -12,7 +12,9 @@ console.log('========================================================');
 
 
 <script> 
+const embediframe = '<iframe class="airtable-embed" src="https://airtable.com/embed/shr8tgzzyVobSVEWf?backgroundColor=yellow&layout=card" frameborder="0" onmousewheel="" width="100%" height="533" style="background: transparent; border: 1px solid #ccc;"></iframe>'
 import Airtable from "airtable"
+let delay = 2000
 const ToDo = document.getElementById('todolist')
 Airtable.configure({
     endpointUrl: 'https://api.airtable.com',
@@ -38,7 +40,7 @@ function displayTodo() {
                 if(checked == true) checked = "checked"
                 else checked = ""
 
-                let pad = "style='padding:7px'"
+                let pad = "style='padding:7px 55px;'"
                 todo += `
                     <tr>
                         <td ${pad}> ${record.get('ToDo')} </td>
@@ -50,8 +52,8 @@ function displayTodo() {
                     <th colspan='2'>ToDo App</th>
                 </tr>
                 <tr>
-                    <td>Description</td>
-                    <td>Status</td>
+                    <th>Description</th>
+                    <th>Status</th>
                 </tr> 
                 ${todo}`
                 addListenerToCheckboxes()
@@ -60,6 +62,7 @@ function displayTodo() {
                 if (err) { console.error(err); return; }
             }
         );
+        refreshEmbeddedAirtable()
 }
 
 // create new todo and insert to Airtable
@@ -79,18 +82,21 @@ function newTodo() {
             console.log(record.getId());
         });
     });
+    setTimeout(() => {
+        refreshEmbeddedAirtable()
+    }, delay);
 }
 
 const submitBtn = document.getElementById('submitBtn')
 submitBtn.addEventListener("click", () => {
     newTodo()
-    setTimeout(displayTodo, 800) 
+    setTimeout(displayTodo, delay) 
 })
 const deleteBtn = document.getElementById("deleteBtn")
 deleteBtn.addEventListener("click", () => {
     console.log('clicked');
     deleteTodo()
-    setTimeout(displayTodo, 800) 
+    setTimeout(displayTodo, delay) 
 
 })
 
@@ -144,7 +150,12 @@ function deleteTodo() {
         console.log('Deleted record', deletedRecord.id);
         });
     }
-    setTimeout(displayTodo, 800) 
+    setTimeout(displayTodo, delay) 
+}
+function refreshEmbeddedAirtable() {
+    let at = document.getElementById("embedAirtable")
+    at.innerHTML = ''
+    at.innerHTML = embediframe
 }
 </script>
 
@@ -152,19 +163,25 @@ function deleteTodo() {
 
 <div class="formCtnr">
     <form>
-        <label for="todoitem">Update ToDo:</label>
+        <label for="todoitem">New ToDo:</label>
         <input type="text" id="todoitem" name="todoitem" value="i.e clean room">
     </form> 
     <button id='submitBtn'>Insert New ToDo</button>
     <button id='deleteBtn'>Delete Checked</button>
+    <section id="embedAirtable"></section>
 </div>
 
 
 <style>
     .formCtnr {
         display: flex;
+        flex-flow: column nowrap;
         justify-content: space-evenly;
-        margin-top: 10px;
+        margin-top: 15px;
+        gap: 10px;
+    }
+    input[type="text"] {
+        width: 98%;
     }
     th, td, tr {
         border: 1px solid black;
@@ -174,11 +191,8 @@ function deleteTodo() {
     table {
         border-collapse: collapse;
         width: 100%;
-    }
-    table:nth-child(2n+1) {
         background-color: lightgoldenrodyellow;
+        font-size: 16px;
     }
-    table:nth-child(2n) {
-        background-color: lightpink;
-    }
+
 </style>
