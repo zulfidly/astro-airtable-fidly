@@ -1,0 +1,184 @@
+---
+// key: patlldAieOYAHkR3e.b899d2b5613dfc3698c4f9dfae687303dc79418c41ddefeff69d1e49aaf484f0
+// token ID : patlldAieOYAHkR3e
+// base ID : appPYoZ3OZY8SnfWQ
+// Table1 ID : tblojQTynspNiXj3y
+// import Airtable from "airtable"
+import * as dotenv from "dotenv"
+dotenv.config()
+
+console.log('========================================================');
+---
+
+
+<script> 
+import Airtable from "airtable"
+const ToDo = document.getElementById('todolist')
+Airtable.configure({
+    endpointUrl: 'https://api.airtable.com',
+    apiKey: 'patlldAieOYAHkR3e.b899d2b5613dfc3698c4f9dfae687303dc79418c41ddefeff69d1e49aaf484f0'
+});
+var base = Airtable.base('appPYoZ3OZY8SnfWQ');
+
+window.addEventListener("load", () => {
+    displayTodo()
+})
+
+function displayTodo() {
+    let todo = ""
+    base('Table1').select({
+        // Selecting the first 3 records in Grid view:
+        // maxRecords: 3,
+        view: "Grid view",
+        // fields: ["Email", "Name"],
+    })  .eachPage(function page(records, ) {
+            // This function (`page`) will get called for each page of records.
+            records.forEach(function(record) { //data is retrieved row-by-row
+                let checked = record.get('isDone')
+                if(checked == true) checked = "checked"
+                else checked = ""
+
+                let pad = "style='padding:7px'"
+                todo += `
+                    <tr>
+                        <td ${pad}> ${record.get('ToDo')} </td>
+                        <td ${pad}> <input class="checkboxes" field=${record.id} type="checkbox" ${checked} /> </td>
+                    </tr>`
+            });
+            ToDo.innerHTML = `
+                <tr>
+                    <th colspan='2'>ToDo App</th>
+                </tr>
+                <tr>
+                    <td>Description</td>
+                    <td>Status</td>
+                </tr> 
+                ${todo}`
+                addListenerToCheckboxes()
+            // fetchNextPage(); // or next 'sheet'
+        },  function done(err) {
+                if (err) { console.error(err); return; }
+            }
+        );
+}
+
+// create new todo and insert to Airtable
+function newTodo() {
+    console.log('test');
+    let ToDo = document.getElementById("todoitem")
+    base('Table1').create([
+        {
+            "fields": {ToDo: ToDo.value, isDone: false}
+        },
+        ], function(err, records) {
+            if (err) {
+                console.error(err);
+                return;
+            }
+        records.forEach(function (record) {
+            console.log(record.getId());
+        });
+    });
+}
+
+const submitBtn = document.getElementById('submitBtn')
+submitBtn.addEventListener("click", () => {
+    newTodo()
+    setTimeout(displayTodo, 800) 
+})
+const deleteBtn = document.getElementById("deleteBtn")
+deleteBtn.addEventListener("click", () => {
+    console.log('clicked');
+    deleteTodo()
+    setTimeout(displayTodo, 800) 
+
+})
+
+function addListenerToCheckboxes() {
+    const checkboxes = document.querySelectorAll(".checkboxes")
+    // console.log(checkboxes);
+    checkboxes.forEach((x) => x.addEventListener("click", (q) => {
+        console.log('checked / unchecked');
+        let isChecked = x.checked
+        console.log(isChecked);
+        let fiedlID = x.getAttribute('field')
+        console.log(x.getAttribute('field'));
+        updateTodo(fiedlID, isChecked)
+    }))
+}
+function updateTodo(fieldID, isChecked) {
+    base('Table1').update(fieldID, {
+        // "ToDo": "Clean the bathroom",
+        "isDone": isChecked
+    }, function(err, record) {
+        if (err) {
+            console.error(err);
+            return;
+        }
+    // console.log(record.get('ToDo'));
+    });
+}
+function deleteTodo() {
+    base('Table1').select({
+        // Selecting the first 3 records in Grid view:
+        // maxRecords: 3,
+        view: "Grid view",
+        filterByFormula: "NOT({isDone} = '')"
+        // fields: ["Email", "Name"],
+    })  .eachPage(function page(records, ) {
+            records.forEach(function(record) { //data is retrieved row-by-row
+                // console.log(record.id)
+                deleteEntry(record.id)
+            });
+        },  function done(err) {
+                if (err) { console.error(err); return; }
+            }
+        );
+
+    function deleteEntry(fieldID) {
+        base('Table1').destroy(fieldID, function(err, deletedRecord) {
+            if (err) {
+                console.error(err);
+                return;
+            }
+        console.log('Deleted record', deletedRecord.id);
+        });
+    }
+    setTimeout(displayTodo, 800) 
+}
+</script>
+
+<table id="todolist"> </table>
+
+<div class="formCtnr">
+    <form>
+        <label for="todoitem">Update ToDo:</label>
+        <input type="text" id="todoitem" name="todoitem" value="i.e clean room">
+    </form> 
+    <button id='submitBtn'>Insert New ToDo</button>
+    <button id='deleteBtn'>Delete Checked</button>
+</div>
+
+
+<style>
+    .formCtnr {
+        display: flex;
+        justify-content: space-evenly;
+        margin-top: 10px;
+    }
+    th, td, tr {
+        border: 1px solid black;
+        padding: 5px;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+    table:nth-child(2n+1) {
+        background-color: lightgoldenrodyellow;
+    }
+    table:nth-child(2n) {
+        background-color: lightpink;
+    }
+</style>
