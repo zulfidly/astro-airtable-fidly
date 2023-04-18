@@ -166,17 +166,21 @@ function refreshEmbeddedAirtable() {
         <label for="todoitem">New ToDo:</label>
         <input type="text" id="todoitem" name="todoitem" value="i.e clean room">
     </form> 
-    <button id='submitBtn'>Insert New ToDo</button>
-    <button id='deleteBtn'>Delete Checked</button>
     <section>
         <a href="https://github.com/zulfidly/astro-airtable-fidly" target="_blank">Github</a>
         <a href="https://airtable.com/shr8tgzzyVobSVEWf" target="_blank">Airtable</a>
     </section>
-    <section id="embedAirtable"></section>
+    <button id='submitBtn'>Insert New ToDo</button>
+    <button id='deleteBtn'>Delete Checked</button>
+    <div id="embedAirtable"></div>
 </div>
 
 
 <style>
+    section {
+        display: flex;
+        justify-content: space-evenly;
+    }
     a{
         text-align: center;
     }
